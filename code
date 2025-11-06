@@ -1,0 +1,28 @@
+python queuectl.py init-db --db ./queue.db
+
+  # Enqueue a job (command string)
+  python queuectl.py enqueue --db ./queue.db --command "echo 'Hello World'" --max-retries 3
+
+  # Enqueue job with JSON payload
+  python queuectl.py enqueue --db ./queue.db --json '{"id":"job-1","command":"ls -la","max_retries":2}'
+
+  # Start 4 workers
+  python queuectl.py start-workers --db ./queue.db --workers 4
+
+  # List pending/running jobs
+  python queuectl.py list --db ./queue.db --state pending
+
+  # Show DLQ
+  python queuectl.py dlq-list --db ./queue.db
+
+  # Requeue a DLQ job
+  python queuectl.py requeue-dlq --db ./queue.db --job-id <JOB_ID>
+
+  # Retry a specific job (force)
+  python queuectl.py retry-job --db ./queue.db --job-id <JOB_ID>
+
+Notes:
+ - SQLite is used for persistence (file DB).
+ - Workers claim jobs atomically using an UPDATE ... WHERE ... AND state='pending' AND next_run_at<=now
+ - Exponential backoff: base_delay * (2 ** attempts) with optional jitter (randomized small fraction)
+ - When attempts > max_retries job is moved to DLQ.

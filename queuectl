@@ -1,6 +1,4 @@
-
-
-
+#!/usr/bin/env python3
 from logger import get_logger
 from models import get_conn
 from jobs import enqueue_job,list_jobs,show_job,dlq_list,requeue_dlq,retry_job_force,worker_loop
@@ -53,9 +51,9 @@ def cmd_start_workers(args):
     # spawn worker processes and handle SIGINT to stop them
     stop_event = Event()
     processes = []
-    logging.info(f"Starting {args.workers} worker(s) (db={args.db})")
+    logging.info(f"Starting {args.count} worker(s) (db={args.db})")
     try:
-        for i in range(args.workers):
+        for i in range(args.count):
             p = Process(target=worker_loop, args=(args.db, logging,stop_event, i, args.poll_interval), name=f"worker-{i}")
             p.start()
             processes.append(p)
@@ -86,10 +84,14 @@ def main():
     enqueue_parser.add_argument("--json",help="Loads Json")
 
     # Start workers
-    worker_parser = subparsers.add_parser("start-workers", help="Start worker processes")
-    worker_parser.add_argument("--workers", type=int, default=2, help="Number of workers")
-    worker_parser.add_argument("--poll-interval", type=int, default=2, help="Polling interval (seconds)")
-    worker_parser.add_argument("--db", default="./queue.db", help="Path to queue database file")
+
+    worker_parser = subparsers.add_parser("worker", help="Manage worker processes")
+    worker_subparsers = worker_parser.add_subparsers(dest="action", required=True)
+    worker_start_parser = worker_subparsers.add_parser("start", help="Start worker processes")
+    worker_start_parser.add_argument("--count", type=int, default=2, help="Number of worker processes")
+    worker_start_parser.add_argument("--poll-interval", type=int, default=2, help="Polling interval (seconds)")
+    worker_start_parser.add_argument("--db", default="./queue.db", help="Path to queue database file")
+    
 
     # List jobs
     list_parser = subparsers.add_parser("list", help="List all jobs")
@@ -113,7 +115,7 @@ def main():
     if args.subcommand == "enqueue":
         print(args.command)
         enqueue_job(db_path=args.db,logger=logging,command=args.command, max_retries=args.max_retries,job_json=args.json)
-    elif args.subcommand == "start-workers":
+    elif args.subcommand == "worker":
         cmd_start_workers(args)
     elif args.subcommand == "list":
         jobs = cmd_list(args)
