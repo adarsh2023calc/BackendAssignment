@@ -9,10 +9,12 @@ import time
 import os 
 import datetime
 
-def enqueue_job(db_path, logger,command=None, job_json=None, max_retries=3):
-    conn = get_conn(db_path)
-    cur = conn.cursor()
 
+
+def enqueue_job(db_path,logger,command=None, job_json=None, max_retries=3):
+    conn = get_conn(db_path,logger=logger)
+    cur = conn.cursor()
+    print(job_json)
     if job_json:
         # user provided custom json (string)
         try:
@@ -21,6 +23,7 @@ def enqueue_job(db_path, logger,command=None, job_json=None, max_retries=3):
             raise ValueError(f"Invalid JSON: {e}")
         job_id = payload.get("id", str(uuid.uuid4()))
         command = payload.get("command", command)
+        print(payload)
         if not command:
             raise ValueError("Job JSON must include 'command' or pass --command")
         max_retries = int(payload.get("max_retries", max_retries))
@@ -41,8 +44,8 @@ def enqueue_job(db_path, logger,command=None, job_json=None, max_retries=3):
     return job_id
 
 
-def list_jobs(db_path, state=None, limit=100):
-    conn = get_conn(db_path)
+def list_jobs(db_path,logging, state=None, limit=100):
+    conn = get_conn(db_path,logging)
     cur = conn.cursor()
     if state:
         cur.execute("SELECT * FROM jobs WHERE state = ? ORDER BY created_at DESC LIMIT ?", (state, limit))
@@ -73,8 +76,8 @@ def move_to_dlq(db_path, logger,job_row, reason=None):
     conn.close()
     logger.warning(f"Moved job {job_row['id']} to DLQ. Reason: {reason}")
 
-def dlq_list(db_path, limit=100):
-    conn = get_conn(db_path)
+def dlq_list(db_path,logger, limit=100):
+    conn = get_conn(db_path,logger=logger)
     cur = conn.cursor()
     cur.execute("SELECT id, moved_at, reason FROM dlq ORDER BY moved_at DESC LIMIT ?", (limit,))
     rows = [dict(r) for r in cur.fetchall()]
@@ -113,7 +116,7 @@ def requeue_dlq(db_path,logger, job_id):
     logger.info(f"Requeued DLQ job {job_id} back to jobs")
 
 def retry_job_force(db_path, logger,job_id):
-    conn = get_conn(db_path)
+    conn = get_conn(db_path=db_path,logger=logger)
     cur = conn.cursor()
     cur.execute("UPDATE jobs SET state='pending', next_run_at=?, updated_at=? WHERE id=?", (unix_now(), now_iso(), job_id))
     conn.commit()
@@ -188,12 +191,12 @@ def run_command(job_row, timeout=300):
         return False, -2, "", f"exception: {e}"
 
 def worker_loop(db_path,logger, stop_event, poll_interval,worker_id=None):
-    conn = get_conn(db_path)
+    conn = get_conn(db_path,logger)
     pid = os.getpid()
     logger.info(f"Worker started (pid={pid}, worker={worker_id})")
     while not stop_event.is_set():
         try:
-            job = claim_job(conn)
+            job = claim_job(logger=logger,conn=conn)
             if not job:
                 # no job now
                 time.sleep(poll_interval)

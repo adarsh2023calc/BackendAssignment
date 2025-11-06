@@ -2,15 +2,9 @@
 import sqlite3
 
 
-def get_conn(db_path):
+def get_conn(db_path,logger):
     conn = sqlite3.connect(db_path, timeout=30, isolation_level=None)  # autocommit mode off if begin is used
     conn.execute("PRAGMA journal_mode=WAL;")  # allow concurrent readers/writers
-    conn.row_factory = sqlite3.Row
-    return conn
-
-
-def init_db(db_path,logger):
-    conn = get_conn(db_path)
     cur = conn.cursor()
     cur.execute("""
     CREATE TABLE IF NOT EXISTS jobs (
@@ -34,9 +28,7 @@ def init_db(db_path,logger):
     );
     """)
     conn.commit()
-    conn.close()
     logger.info(f"Initialized DB at {db_path}")
 
-
-
-
+    conn.row_factory = sqlite3.Row
+    return conn

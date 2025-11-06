@@ -2,7 +2,7 @@
 
 
 from logger import get_logger
-from models import init_db
+from models import get_conn
 from jobs import enqueue_job,list_jobs,show_job,dlq_list,requeue_dlq,retry_job_force,worker_loop
 import json  
 import sys  
@@ -13,15 +13,13 @@ import argparse
 
 logging = get_logger()
 
-def cmd_init_db(args):
-    init_db(args.db,logging)
 
 def cmd_enqueue(args):
     job_id = enqueue_job(args.db,logging,command=args.command, job_json=args.json, max_retries=args.max_retries)
     print(job_id)
 
 def cmd_list(args):
-    rows = list_jobs(args.db,state=args.state, limit=args.limit)
+    rows = list_jobs(args.db,logging=logging,state=args.state, limit=args.limit)
     print(json.dumps(rows, indent=2, default=str))
 
 def cmd_show(args):
@@ -32,7 +30,7 @@ def cmd_show(args):
     print(json.dumps(job, indent=2, default=str))
 
 def cmd_dlq_list(args):
-    rows = dlq_list(args.db, limit=args.limit)
+    rows = dlq_list(args.db, logger=logging,limit=args.limit)
     print(json.dumps(rows, indent=2, default=str))
 
 def cmd_requeue_dlq(args):
@@ -78,37 +76,56 @@ def cmd_start_workers(args):
 
 def main():
     parser = argparse.ArgumentParser(description="queuectl - simple background job queue")
-    subparsers = parser.add_subparsers(dest="command")
+    subparsers = parser.add_subparsers(dest="subcommand")
 
     # Enqueue
     enqueue_parser = subparsers.add_parser("enqueue", help="Enqueue a new job")
-    enqueue_parser.add_argument("command", help="Command to run")
-    enqueue_parser.add_argument("--max_retries", type=int, default=3, help="Max retries per job")
+    enqueue_parser.add_argument("--db", default="./queue.db", help="Path to queue database file")
+    enqueue_parser.add_argument("--command", help="Command to run")
+    enqueue_parser.add_argument("--max-retries", type=int, default=3, help="Max retries per job")
+    enqueue_parser.add_argument("--json",help="Loads Json")
 
     # Start workers
-    worker_parser = subparsers.add_parser("start", help="Start worker processes")
+    worker_parser = subparsers.add_parser("start-workers", help="Start worker processes")
     worker_parser.add_argument("--workers", type=int, default=2, help="Number of workers")
-    worker_parser.add_argument("--poll_interval", type=int, default=2, help="Polling interval (seconds)")
+    worker_parser.add_argument("--poll-interval", type=int, default=2, help="Polling interval (seconds)")
+    worker_parser.add_argument("--db", default="./queue.db", help="Path to queue database file")
 
     # List jobs
-    subparsers.add_parser("list", help="List all jobs")
-    subparsers.add_parser("dlq", help="Show Dead Letter Queue")
+    list_parser = subparsers.add_parser("list", help="List all jobs")
+    list_parser.add_argument("--db", default="./queue.db", help="Path to queue database file")
+    list_parser.add_argument("--state", default="running", help="Path to queue database file")
+    list_parser.add_argument("--limit", default=10, help="Path to queue database file")
+
+    # Dead Letter Queue
+    dlq_parser = subparsers.add_parser("dlq", help="Show Dead Letter Queue")
+    dlq_parser.add_argument("--db", default="./queue.db", help="Path to queue database file")
+    dlq_parser.add_argument("--limit", default=10, help="Path to queue database file")
+
+
+    retry_parser= subparsers.add_parser("retry-job")
+    retry_parser.add_argument("--db", default="./queue.db", help="Path to queue database file")
+    retry_parser.add_argument("--job-id",default=0,help="The Job Id of the corresponding job")
 
     args = parser.parse_args()
 
-    if args.command == "enqueue":
-        cmd_enqueue(args)
-    elif args.command == "start":
+    # Dispatch
+    if args.subcommand == "enqueue":
+        print(args.command)
+        enqueue_job(db_path=args.db,logger=logging,command=args.command, max_retries=args.max_retries,job_json=args.json)
+    elif args.subcommand == "start-workers":
         cmd_start_workers(args)
-    elif args.command == "list":
-        jobs=cmd_list(args)
+    elif args.subcommand == "list":
+        jobs = cmd_list(args)
         print(json.dumps(jobs, indent=2))
-    elif args.command == "dlq":
+    elif args.subcommand == "dlq":
         dlq = cmd_dlq_list(args)
         print(json.dumps(dlq, indent=2))
+    
+    elif args.subcommand=="retry-job":
+        cmd_retry_job(args)
     else:
         parser.print_help()
-
 
 if __name__ == "__main__":
     main()
