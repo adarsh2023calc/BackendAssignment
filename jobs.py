@@ -65,6 +65,24 @@ def show_job(db_path, job_id):
     conn.close()
     return dict(r) if r else None
 
+def show_status(db_path,logger):
+    conn = sqlite3.connect(db_path, timeout=30, isolation_level=None)  # autocommit mode off if begin is used
+    conn.execute("PRAGMA journal_mode=WAL;")  # allow concurrent readers/writers
+
+    conn.row_factory = sqlite3.Row  
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM jobs")
+    rows = cur.fetchall()
+    
+    jobs = []
+    col_names = [desc[0] for desc in cur.description]
+    for row in rows:
+        jobs.append(dict(zip(col_names, row)))
+
+    conn.close()
+    return jobs
+
+
 def move_to_dlq(db_path, logger,job_row, reason=None):
     conn = get_conn(db_path)
     cur = conn.cursor()

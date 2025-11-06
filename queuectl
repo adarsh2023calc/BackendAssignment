@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 from logger import get_logger
 from models import get_conn
-from jobs import enqueue_job,list_jobs,show_job,dlq_list,requeue_dlq,retry_job_force,worker_loop
+from jobs import enqueue_job,list_jobs,show_job,dlq_list,requeue_dlq,retry_job_force,worker_loop,show_status
 import json  
 import sys  
 from multiprocessing import Process, Event
 import time  
 import argparse
+import os 
+import signal
 
 
 logging = get_logger()
+PID_FILE="./workers.pid"
 
 
 def cmd_enqueue(args):
@@ -26,6 +29,12 @@ def cmd_show(args):
         print(f"Job {args.job_id} not found", file=sys.stderr)
         sys.exit(2)
     print(json.dumps(job, indent=2, default=str))
+
+
+def cmd_status(args):
+    job = show_status(args.db,logger=logging)
+    print(json.dumps(job, indent=2, default=str))
+
 
 def cmd_dlq_list(args):
     rows = dlq_list(args.db, logger=logging,limit=args.limit)
@@ -47,8 +56,31 @@ def cmd_retry_job(args):
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(2)
 
+
+def cmd_worker_stop(args):
+    if not os.path.exists(PID_FILE):
+        print("⚠️ No PID file found — no workers to stop.")
+        return
+
+    with open(PID_FILE, "r") as f:
+        pids = [int(line.strip()) for line in f if line.strip()]
+
+    print(f"🛑 Stopping {len(pids)} worker(s)...")
+
+    for pid in pids:
+        try:
+            os.kill(pid, signal.SIGTERM)
+            print(f"   ➜ Sent SIGTERM to PID {pid}")
+        except ProcessLookupError:
+            print(f"   ⚠️ Worker PID {pid} not found")
+
+    os.remove(PID_FILE)
+    print(" All workers stopped (gracefully signaled)")
+
 def cmd_start_workers(args):
     # spawn worker processes and handle SIGINT to stop them
+
+
     stop_event = Event()
     processes = []
     logging.info(f"Starting {args.count} worker(s) (db={args.db})")
@@ -60,6 +92,8 @@ def cmd_start_workers(args):
         # main process waits until terminated
         while True:
             alive = any(p.is_alive() for p in processes)
+            print(f" Saved worker PIDs to {PID_FILE}")
+            time.sleep(1)
             if not alive:
                 break
             time.sleep(0.5)
@@ -83,11 +117,14 @@ def main():
     enqueue_parser.add_argument("--max-retries", type=int, default=3, help="Max retries per job")
     enqueue_parser.add_argument("--json",help="Loads Json")
 
+   
+
     # Start workers
 
     worker_parser = subparsers.add_parser("worker", help="Manage worker processes")
     worker_subparsers = worker_parser.add_subparsers(dest="action", required=True)
     worker_start_parser = worker_subparsers.add_parser("start", help="Start worker processes")
+    worker_stop_parser = worker_subparsers.add_parser("stop", help="End worker processes")
     worker_start_parser.add_argument("--count", type=int, default=2, help="Number of worker processes")
     worker_start_parser.add_argument("--poll-interval", type=int, default=2, help="Polling interval (seconds)")
     worker_start_parser.add_argument("--db", default="./queue.db", help="Path to queue database file")
@@ -99,6 +136,10 @@ def main():
     list_parser.add_argument("--state", default="running", help="Path to queue database file")
     list_parser.add_argument("--limit", default=10, help="Path to queue database file")
 
+
+    status_parser= subparsers.add_parser("status",help="Helps in listing all jobs for now")
+    status_parser.add_argument("--db", default="./queue.db", help="Path to queue database file")
+    
     # Dead Letter Queue
     dlq_parser = subparsers.add_parser("dlq", help="Show Dead Letter Queue")
     dlq_parser.add_argument("--db", default="./queue.db", help="Path to queue database file")
@@ -116,7 +157,12 @@ def main():
         print(args.command)
         enqueue_job(db_path=args.db,logger=logging,command=args.command, max_retries=args.max_retries,job_json=args.json)
     elif args.subcommand == "worker":
-        cmd_start_workers(args)
+        if args.action == "start":
+            cmd_start_workers(args)
+        elif args.action== "stop":
+            cmd_worker_stop(args)
+        else:
+            parser.print_help()
     elif args.subcommand == "list":
         jobs = cmd_list(args)
         print(json.dumps(jobs, indent=2))
@@ -126,6 +172,9 @@ def main():
     
     elif args.subcommand=="retry-job":
         cmd_retry_job(args)
+    
+    elif args.subcommand =="status":
+        cmd_status(args)
     else:
         parser.print_help()
 
