@@ -142,6 +142,10 @@ def main():
     
     # Dead Letter Queue
     dlq_parser = subparsers.add_parser("dlq", help="Show Dead Letter Queue")
+    sub_parser = dlq_parser.add_subparsers(dest="action")
+    list_parser = sub_parser.add_parser("list",help="Lists all the DLQ queues")
+    retry_parser = sub_parser.add_parser("retry",help="Retries the jobs by transfering to worker pool")
+    retry_parser.add_argument("--job_id",help="Retries the specific job ID")
     dlq_parser.add_argument("--db", default="./queue.db", help="Path to queue database file")
     dlq_parser.add_argument("--limit", default=10, help="Path to queue database file")
 
@@ -167,8 +171,11 @@ def main():
         jobs = cmd_list(args)
         print(json.dumps(jobs, indent=2))
     elif args.subcommand == "dlq":
-        dlq = cmd_dlq_list(args)
-        print(json.dumps(dlq, indent=2))
+        if args.action=="list":
+            dlq = cmd_dlq_list(args)
+            print(json.dumps(dlq, indent=2))
+        elif args.action=="retry":
+            cmd_requeue_dlq(args)
     
     elif args.subcommand=="retry-job":
         cmd_retry_job(args)

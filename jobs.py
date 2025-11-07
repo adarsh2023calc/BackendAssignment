@@ -84,7 +84,7 @@ def show_status(db_path,logger):
 
 
 def move_to_dlq(db_path, logger,job_row, reason=None):
-    conn = get_conn(db_path)
+    conn = get_conn(db_path,logger)
     cur = conn.cursor()
     payload = json.dumps({k: job_row[k] for k in job_row.keys()})
     moved_at = now_iso()
@@ -103,7 +103,7 @@ def dlq_list(db_path,logger, limit=100):
     return rows
 
 def requeue_dlq(db_path,logger, job_id):
-    conn = get_conn(db_path)
+    conn = get_conn(db_path,logger=logger)
     cur = conn.cursor()
     cur.execute("SELECT payload FROM dlq WHERE id = ?", (job_id,))
     r = cur.fetchone()
@@ -235,7 +235,7 @@ def worker_loop(db_path,logger, stop_event, poll_interval,worker_id=None):
                     cur.execute("SELECT * FROM jobs WHERE id=?", (job["id"],))
                     full = cur.fetchone()
                     if full:
-                        move_to_dlq(db_path, full, reason=f"Exceeded retries. Last error: {stderr or 'exit:'+str(exit_code)}")
+                        move_to_dlq(db_path,logger=logger,job_row=full, reason=f"Exceeded retries. Last error: {stderr or 'exit:'+str(exit_code)}")
                     else:
                         logger.error(f"Job {job['id']} missing when trying to move to DLQ")
                 else:
