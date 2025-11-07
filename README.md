@@ -103,3 +103,8 @@ queuectl list --state running
 ![QueueCTL Showing  the status of the DLQ ](assets/dlq.png)
 
 
+### Rescheduling the failed job
+![QueueCTL Rescheduling the failed job](assets/retry.png)
+
+
+
