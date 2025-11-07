@@ -1,7 +1,7 @@
 # BackendAssignment
 
 
- """# 🧠 queuectl — CLI-based Background Job Queue System"""
+# 🧠 queuectl — CLI-based Background Job Queue System
 
 `queuectl` is a lightweight, production-style **background job queue system** built in **Python**.  
 It supports enqueuing shell commands as jobs, processing them with worker processes, retrying failures using **exponential backoff**, and maintaining a **Dead Letter Queue (DLQ)** for permanently failed jobs.
@@ -93,3 +93,13 @@ queuectl list --state running
 ```
 
 ![QueueCTL list pending](assets/pending.png)
+
+
+
+## DLQ
+
+### Showing  the status of the DLQ
+
+![QueueCTL Showing  the status of the DLQ ](assets/dlq.png)
+
+
