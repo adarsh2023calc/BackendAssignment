@@ -83,3 +83,13 @@ or
   ```
 
 ![QueueCTL job status](assets/status.png)
+
+
+
+## Pending 
+
+```bash 
+queuectl list --state running
+```
+
+![QueueCTL list pending](assets/pending.png)
