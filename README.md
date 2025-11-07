@@ -73,3 +73,13 @@ or
 ![QueueCTL worker start](assets/worker.png)
 
 
+
+
+## Status
+
+
+```bash 
+    ./queuectl status 
+  ```
+
+  [QueueCTL job status] (assets/status)
