@@ -53,7 +53,7 @@ sudo ln -s $(pwd)/queuectl /usr/local/bin/queuectl   # optional global usage
 ./queuectl enqueue --json '{"id":"job1","command":"echo Hello","max_retries":2}'
 ```
 
-![QueueCTL Logo](assets/enequeue.png)
+![QueueCTL Logo](assets/enqueue.png)
 
 or 
  ```bash
