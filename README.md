@@ -35,4 +35,29 @@ sudo ln -s $(pwd)/queuectl /usr/local/bin/queuectl   # optional global usage
 
 ---
 
-##  
+##  Job Format
+
+```bash
+{
+  "id": "job-1",
+  "command": "echo 'Hello World'",
+  "state": "pending",
+  "attempts": 0,
+  "max_retries": 3,
+  "created_at": "2025-11-04T10:30:00Z",
+  "updated_at": "2025-11-04T10:30:00Z"
+}
+```
+
+---
+
+## 🚀 Usage
+1️⃣ Enqueue a Job
+```bash 
+queuectl enqueue --json '{"id":"job1","command":"echo Hello","max_retries":2}'
+```
+
+or 
+ ```bash
+queuectl enqueue --command "ls-l"
+```
