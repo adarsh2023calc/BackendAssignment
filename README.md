@@ -82,4 +82,4 @@ or
     ./queuectl status 
   ```
 
-  [QueueCTL job status] (assets/status.png)
+![QueueCTL job status] (assets/status.png)
