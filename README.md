@@ -3,7 +3,9 @@
 
 
 
-"""# 🧠 queuectl — CLI-based Background Job Queue System"""
+from pathlib import Path
+
+readme_content = """# 🧠 queuectl — CLI-based Background Job Queue System
 
 `queuectl` is a lightweight, production-style **background job queue system** built in **Python**.  
 It supports enqueuing shell commands as jobs, processing them with worker processes, retrying failures using **exponential backoff**, and maintaining a **Dead Letter Queue (DLQ)** for permanently failed jobs.
@@ -28,3 +30,8 @@ git clone https://github.com/yourusername/queuectl.git
 cd queuectl
 chmod +x queuectl
 sudo ln -s $(pwd)/queuectl /usr/local/bin/queuectl   # optional global usage
+
+
+---
+
+##  
