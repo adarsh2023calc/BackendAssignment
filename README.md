@@ -70,6 +70,6 @@ or
 ./queuectl worker start --count 3
 ```
 
-![QueueCTL worker start]{}
+![QueueCTL worker start]{assets/worker.png}
 
 
