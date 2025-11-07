@@ -62,3 +62,14 @@ or
 ```
 
 ![QueueCTL Enqueue using command](assets/command.png)
+
+
+## Workers
+
+```bash 
+./queuectl worker start --count 3
+```
+
+![QueueCTL worker start]{}
+
+
