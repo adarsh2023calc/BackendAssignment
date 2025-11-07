@@ -1,4 +1,5 @@
-from pathlib import Path
+
+#Backend Assignment
 
 readme_content = """# 🧠 queuectl — CLI-based Background Job Queue System
 
