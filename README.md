@@ -30,6 +30,7 @@ git clone https://github.com/yourusername/queuectl.git
 cd queuectl
 chmod +x queuectl
 sudo ln -s $(pwd)/queuectl /usr/local/bin/queuectl   # optional global usage
+```
 
 
 ---
