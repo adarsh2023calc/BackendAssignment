@@ -50,12 +50,15 @@ sudo ln -s $(pwd)/queuectl /usr/local/bin/queuectl   # optional global usage
 ## 🚀 Usage
 1️⃣ Enqueue a Job
 ```bash 
-./queuectl enqueue --json '{"id":"job1","command":"echo Hello","max_retries":2}'
+./queuectl enqueue --json '{"id":"job3","command":"echo Hello","max_retries":2}'
 ```
 
 ![QueueCTL Logo](assets/enqueue.png)
+
 
 or 
  ```bash
 ./queuectl enqueue --command "ls-l"
 ```
+
+![QueueCTL Enqueue using command](assets/command.png)
