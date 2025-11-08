@@ -4,7 +4,7 @@ import sqlite3
 
 def get_conn(db_path,logger):
     conn = sqlite3.connect(db_path, timeout=30, isolation_level=None)  # autocommit mode off if begin is used
-    conn.execute("PRAGMA journal_mode=WAL;")  # allow concurrent readers/writers
+    conn.execute("PRAGMA journal_mode=DELETE;")
     cur = conn.cursor()
     cur.execute("""
     CREATE TABLE IF NOT EXISTS jobs (

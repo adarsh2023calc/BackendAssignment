@@ -6,7 +6,7 @@ import json
 import tempfile
 import pytest
 
-DB_FILE = "test.db"
+DB_FILE = "./test.db"
 
 @pytest.fixture(autouse=True)
 def cleanup_db():

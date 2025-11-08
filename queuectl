@@ -146,8 +146,8 @@ def main():
     list_parser = sub_parser.add_parser("list",help="Lists all the DLQ queues")
     retry_parser = sub_parser.add_parser("retry",help="Retries the jobs by transfering to worker pool")
     retry_parser.add_argument("--job_id",help="Retries the specific job ID")
-    dlq_parser.add_argument("--db", default="./queue.db", help="Path to queue database file")
-    dlq_parser.add_argument("--limit", default=10, help="Path to queue database file")
+    list_parser.add_argument("--db", default="./queue.db", help="Path to queue database file")
+    list_parser.add_argument("--limit", default=10, help="Path to queue database file")
 
 
     retry_parser= subparsers.add_parser("retry-job")
