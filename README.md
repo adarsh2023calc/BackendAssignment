@@ -118,6 +118,6 @@ queuectl list --state running
 
 
 ## Architecture Diagram
-![Architecture diagram] (assets/architecture.png)
+![Architecture diagram](assets/architecture.png)
 
 
