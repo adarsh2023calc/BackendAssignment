@@ -29,6 +29,9 @@ sudo ln -s $(pwd)/queuectl /usr/local/bin/queuectl   # optional global usage
 ```
 
 
+
+
+
 ---
 
 ##  Job Format
@@ -100,11 +103,21 @@ queuectl list --state running
 
 ### Showing  the status of the DLQ
 
+```bash 
+./queuectl dlq show
+```
 ![QueueCTL Showing  the status of the DLQ ](assets/dlq.png)
 
 
+
+
 ### Rescheduling the failed job
+ ./queuectl dlq retry_job <jobid>
 ![QueueCTL Rescheduling the failed job](assets/retry.png)
 
+
+
+## Architecture Diagram
+![Architecture diagram] (assets/architecture.png)
 
 
