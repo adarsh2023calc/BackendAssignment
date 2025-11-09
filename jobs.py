@@ -102,6 +102,7 @@ def dlq_list(db_path,logger, limit=100):
     conn.close()
     return rows
 
+
 def requeue_dlq(db_path,logger, job_id):
     conn = get_conn(db_path,logger=logger)
     cur = conn.cursor()

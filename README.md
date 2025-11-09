@@ -112,7 +112,7 @@ queuectl list --state running
 
 
 ### Rescheduling the failed job
- ./queuectl dlq retry_job <jobid>
+ ./queuectl dlq retry-job <jobid>
 ![QueueCTL Rescheduling the failed job](assets/retry.png)
 
 
