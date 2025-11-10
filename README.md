@@ -16,8 +16,14 @@ It supports enqueuing shell commands as jobs, processing them with worker proces
 - 💀 **Dead Letter Queue (DLQ)** — permanently failed jobs are stored safely  
 - 💾 **Persistent storage** — jobs stored in SQLite (`queue.db`)  
 - 🧰 **CLI interface** — fully controllable from the terminal  
+-   **Dashboard for viewing** - Fully viewable dashboard
+
+![QueueCTL Logo](assets/dashboard.png)
 
 ---
+
+
+
 
 ## 📦 Installation
 
