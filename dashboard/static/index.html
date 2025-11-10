@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Queue Monitor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <div class="max-w-6xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-4">Queue Monitor Dashboard</h1>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      <div class="p-4 bg-blue-100 rounded-lg text-center">
+        <div class="text-xl font-semibold">Total</div>
+        <div class="text-2xl">{{ status.total }}</div>
+      </div>
+      <div class="p-4 bg-green-100 rounded-lg text-center">
+        <div class="text-xl font-semibold">Running</div>
+        <div class="text-2xl">{{ status.running }}</div>
+      </div>
+      <div class="p-4 bg-red-100 rounded-lg text-center">
+        <div class="text-xl font-semibold">Failed</div>
+        <div class="text-2xl">{{ status.failed }}</div>
+      </div>
+      <div class="p-4 bg-yellow-100 rounded-lg text-center">
+        <div class="text-xl font-semibold">DLQ</div>
+        <div class="text-2xl">{{ status.dlq }}</div>
+      </div>
+    </div>
+
+    <!-- Recent Jobs -->
+    <h2 class="text-2xl font-semibold mb-2">Recent Jobs</h2>
+    <table class="min-w-full bg-white rounded-lg shadow mb-8">
+      <thead>
+        <tr class="bg-gray-200 text-left">
+          <th class="py-2 px-4">ID</th>
+          <th class="py-2 px-4">Command</th>
+          <th class="py-2 px-4">State</th>
+          <th class="py-2 px-4">Retries</th>
+          <th class="py-2 px-4">Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for job in jobs %}
+        <tr class="border-t">
+          <td class="py-2 px-4">{{ job.id }}</td>
+          <td class="py-2 px-4 truncate">{{ job.command }}</td>
+          <td class="py-2 px-4">{{ job.state }}</td>
+          <td class="py-2 px-4">{{ job.retries }}</td>
+          <td class="py-2 px-4">{{ job.created_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- DLQ -->
+    <h2 class="text-2xl font-semibold mb-2">Dead Letter Queue</h2>
+    <table class="min-w-full bg-white rounded-lg shadow">
+      <thead>
+        <tr class="bg-gray-200 text-left">
+          <th class="py-2 px-4">Job ID</th>
+          <th class="py-2 px-4">Error</th>
+          <th class="py-2 px-4">Failed At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in dlq %}
+        <tr class="border-t">
+          <td class="py-2 px-4">{{ d.job_id }}</td>
+          <td class="py-2 px-4 truncate">{{ d.error }}</td>
+          <td class="py-2 px-4">{{ d.failed_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
